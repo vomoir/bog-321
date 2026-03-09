@@ -1,11 +1,9 @@
-// TODO: Replace with your own Firebase configuration
+// Use environment variables for Firebase configuration
 export const firebaseConfig = {
-  apiKey: "AIzaSyB6XBWozjQ4J9JLff87OkSIvVf2nqrH7_c",
-  authDomain: "bog-321.firebaseapp.com",
-  projectId: "bog-321",
-  storageBucket: "bog-321.firebasestorage.app",
-  messagingSenderId: "446849495906",
-  appId: "1:446849495906:web:98f9d665b415281e9fb23b",
-  measurementId: "G-66BN87B805"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
-
