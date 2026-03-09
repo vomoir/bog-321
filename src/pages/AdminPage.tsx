@@ -1,20 +1,21 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Container, Typography, Box, Table, TableBody, TableCell, TableHead, TableRow, Paper, TextField, Button, List, ListItem, ListItemText, IconButton, TableContainer } from '@mui/material'
 import DeleteIcon from '@mui/icons-material/Delete'
+import CloudUploadIcon from '@mui/icons-material/CloudUpload'
 import { useVoteStore } from '../store/useVoteStore'
 import { db, auth } from '../firebase/firebase'
-import { collection, query, getDocs, doc, setDoc, deleteDoc } from 'firebase/firestore'
+import { collection, query, getDocs, doc, setDoc, deleteDoc, where } from 'firebase/firestore'
 import { createUserWithEmailAndPassword, getAuth, sendPasswordResetEmail } from 'firebase/auth'
 import { initializeApp, getApp, type FirebaseApp } from 'firebase/app'
 import { firebaseConfig } from '../firebase/firebaseConfig'
-
-import { players } from '../constants/players'
+import Papa from 'papaparse'
 
 export function AdminPage() {
   const { totalVotes, fetchTotalVotes } = useVoteStore()
   const [users, setUsers] = useState<any[]>([])
   const [newName, setNewName] = useState('')
   const [newPassword, setNewPassword] = useState('')
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     fetchTotalVotes()
@@ -31,27 +32,28 @@ export function AdminPage() {
     setUsers(userList)
   }
 
+  const createUserAccount = async (name: string, password: string) => {
+    const email = `${name.toLowerCase().replace(/\s+/g, '')}@soccer.com`
+    let secondaryApp: FirebaseApp
+    try {
+      secondaryApp = getApp('Secondary')
+    } catch (e) {
+      secondaryApp = initializeApp(firebaseConfig, 'Secondary')
+    }
+    const secondaryAuth = getAuth(secondaryApp)
+    const userCredential = await createUserWithEmailAndPassword(secondaryAuth, email, password)
+    const user = userCredential.user
+
+    await setDoc(doc(db, 'users', user.uid), {
+      email: email,
+      name: name,
+      role: 'user'
+    })
+  }
+
   const handleAddUser = async () => {
     try {
-      const email = `${newName.toLowerCase().replace(/\s+/g, '')}@soccer.com`
-      // Note: In a real app, you should use a Cloud Function for this.
-      // For this demo, we can use a secondary app to create the user without logging out the current admin.
-      let secondaryApp: FirebaseApp
-      try {
-        secondaryApp = getApp('Secondary')
-      } catch (e) {
-        secondaryApp = initializeApp(firebaseConfig, 'Secondary')
-      }
-      const secondaryAuth = getAuth(secondaryApp)
-      const userCredential = await createUserWithEmailAndPassword(secondaryAuth, email, newPassword)
-      const user = userCredential.user
-
-      await setDoc(doc(db, 'users', user.uid), {
-        email: email,
-        name: newName,
-        role: 'user'
-      })
-
+      await createUserAccount(newName, newPassword)
       setNewName('')
       setNewPassword('')
       fetchUsers()
@@ -60,6 +62,37 @@ export function AdminPage() {
       console.error('Error adding user:', error)
       alert((error as Error).message)
     }
+  }
+
+  const handleCSVUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    Papa.parse(file, {
+      header: true,
+      skipEmptyLines: true,
+      complete: async (results) => {
+        let successCount = 0
+        let errorCount = 0
+
+        for (const row of results.data as any) {
+          const { first_name, last_name, password } = row
+          if (first_name && last_name && password) {
+            try {
+              await createUserAccount(`${first_name} ${last_name}`, password)
+              successCount++
+            } catch (err) {
+              console.error(`Error creating user ${first_name} ${last_name}:`, err)
+              errorCount++
+            }
+          }
+        }
+        
+        fetchUsers()
+        alert(`Import complete. Success: ${successCount}, Errors: ${errorCount}`)
+        if (fileInputRef.current) fileInputRef.current.value = ''
+      }
+    })
   }
 
   const handleDeleteUser = async (userId: string) => {
@@ -78,6 +111,8 @@ export function AdminPage() {
     }
   }
 
+  const playerUsers = users.filter(u => u.role === 'user')
+
   return (
     <Container>
       <Box sx={{ my: 4 }}>
@@ -94,12 +129,17 @@ export function AdminPage() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {players.map((player) => (
+                {playerUsers.map((player) => (
                   <TableRow key={player.id}>
                     <TableCell>{player.name}</TableCell>
                     <TableCell align="right">{totalVotes[player.id] || 0}</TableCell>
                   </TableRow>
                 ))}
+                {playerUsers.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={2} align="center">No players found</TableCell>
+                  </TableRow>
+                )}
               </TableBody>
             </Table>
           </TableContainer>
@@ -107,6 +147,27 @@ export function AdminPage() {
 
         <Box sx={{ mt: 4 }}>
           <Typography variant="h5" gutterBottom>User Management</Typography>
+          
+          <Box sx={{ mb: 3, display: 'flex', gap: 2, alignItems: 'center' }}>
+            <Button
+              variant="outlined"
+              component="label"
+              startIcon={<CloudUploadIcon />}
+            >
+              Import CSV
+              <input
+                type="file"
+                hidden
+                accept=".csv"
+                ref={fileInputRef}
+                onChange={handleCSVUpload}
+              />
+            </Button>
+            <Typography variant="caption" color="textSecondary">
+              CSV Header: first_name, last_name, password
+            </Typography>
+          </Box>
+
           <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
             <TextField
               label="Name"
