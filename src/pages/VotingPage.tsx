@@ -9,9 +9,11 @@ import { useVoteStore } from '../store/useVoteStore'
 import { useAuthStore } from '../store/useAuthStore'
 import { db } from '../firebase/firebase'
 import { collection, query, where, getDocs } from 'firebase/firestore'
+import { useSnackbar } from 'notistack'
 
 export function VotingPage() {
   const { votes, addVote, setGameDetails, saveVotesToFirestore } = useVoteStore()
+  const { enqueueSnackbar } = useSnackbar()
   const { user } = useAuthStore()
   const [opposition, setOpposition] = useState('')
   const [gameDate, setGameDate] = useState<Dayjs | null>(dayjs())
@@ -46,12 +48,17 @@ export function VotingPage() {
     }
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     setGameDetails({ 
       opposition, 
       gameDate: gameDate ? gameDate.format('YYYY-MM-DD') : '' 
     })
-    saveVotesToFirestore()
+    try {
+      await saveVotesToFirestore()
+      enqueueSnackbar('Votes saved successfully!', { variant: 'success' })
+    } catch (err) {
+      enqueueSnackbar('Error saving votes', { variant: 'error' })
+    }
   }
 
   // Determine which point values have already been cast
@@ -106,7 +113,7 @@ export function VotingPage() {
             >
               {availablePlayers.map((player) => (
                 <MenuItem key={player.id} value={player.id}>
-                  {player.name}
+                  {player.name} {player.aka ? `(${player.aka})` : ''}
                 </MenuItem>
               ))}
               {availablePlayers.length === 0 && (
@@ -123,28 +130,12 @@ export function VotingPage() {
 
         {selectedPlayer && (
           <PlayerCard
-            playerName={selectedPlayer.name}
+            playerName={selectedPlayer.aka ? `${selectedPlayer.name} (${selectedPlayer.aka})` : selectedPlayer.name}
+            photoURL={selectedPlayer.photoURL}
             onVote={handleVote}
             availableVotes={availablePointValues}
           />
         )}
-
-        <Box sx={{ mt: 4, pt: 2, borderTop: '1px solid #ddd' }}>
-          <Typography variant="h6">Votes Cast: {votes.length}</Typography>
-          <Button 
-            variant="contained" 
-            color="primary" 
-            onClick={handleSave} 
-            sx={{ mt: 2 }}
-            disabled={votes.length === 0}
-          >
-            Save All Votes
-          </Button>
-        </Box>
-      </Container>
-    </LocalizationProvider>
-  )
-}
 
         <Box sx={{ mt: 4, pt: 2, borderTop: '1px solid #ddd' }}>
           <Typography variant="h6">Votes Cast: {votes.length}</Typography>

@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, Link } from 'react-router-dom'
 import { Container, Typography, AppBar, Toolbar, Button, Box } from '@mui/material'
+import { SnackbarProvider } from 'notistack'
 import { VotingPage } from './pages/VotingPage'
 import { LoginPage } from './pages/LoginPage'
 import { AdminPage } from './pages/AdminPage'
@@ -11,8 +12,9 @@ function App() {
   if (loading) return null
 
   return (
-    <Router>
-      <AppBar position="static">
+    <SnackbarProvider maxSnack={3} autoHideDuration={3000}>
+      <Router>
+        <AppBar position="static">
         <Toolbar>
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
             Soccer Vote
@@ -50,7 +52,8 @@ function App() {
           />
         </Routes>
       </Container>
-    </Router>
+      </Router>
+    </SnackbarProvider>
   )
 }
 
