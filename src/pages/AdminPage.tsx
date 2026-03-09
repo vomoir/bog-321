@@ -5,6 +5,7 @@ import {
   TableContainer, Tabs, Tab, Dialog, DialogTitle, DialogContent, 
   DialogActions, Avatar, CircularProgress 
 } from '@mui/material'
+import DodoIcon from '../components/DodoIcon'
 import DeleteIcon from '@mui/icons-material/Delete'
 import CloudUploadIcon from '@mui/icons-material/CloudUpload'
 import EditIcon from '@mui/icons-material/Edit'
@@ -212,7 +213,10 @@ export function AdminPage() {
   return (
     <Container>
       <Box sx={{ my: 4 }}>
-        <Typography variant="h4" gutterBottom>Admin Dashboard</Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+          <DodoIcon size={48} color="#1976d2" />
+          <Typography variant="h4">Admin Dashboard</Typography>
+        </Box>
         
         <Tabs value={tabValue} onChange={(_, val) => setTabValue(val)} sx={{ mb: 3 }}>
           <Tab label="Vote Totals" />

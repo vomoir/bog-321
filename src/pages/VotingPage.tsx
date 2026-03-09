@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Container, Typography, TextField, Button, Box, FormControl, InputLabel, Select, MenuItem } from '@mui/material'
+import DodoIcon from '../components/DodoIcon'
 import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
@@ -81,10 +82,14 @@ export function VotingPage() {
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <Container>
-        <Box sx={{ my: 4 }}>
-          <Typography variant="h4" component="h1" gutterBottom>
-            Vote for the Best Players
+        <Box sx={{ my: 4, display: 'flex', alignItems: 'center', gap: 2 }}>
+          <DodoIcon size={48} color="#1976d2" />
+          <Typography variant="h4" component="h1">
+            Cast Your Votes
           </Typography>
+        </Box>
+
+        <Box sx={{ mb: 4 }}>
           <TextField
             label="Opposition"
             value={opposition}

@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, Link } from 'react-router-dom'
 import { Container, Typography, AppBar, Toolbar, Button, Box } from '@mui/material'
 import { SnackbarProvider } from 'notistack'
+import DodoIcon from './components/DodoIcon'
 import { VotingPage } from './pages/VotingPage'
 import { LoginPage } from './pages/LoginPage'
 import { AdminPage } from './pages/AdminPage'
@@ -16,8 +17,9 @@ function App() {
       <Router>
         <AppBar position="static">
         <Toolbar>
-          <Typography variant="h6" sx={{ flexGrow: 1 }}>
-            Soccer Vote
+          <DodoIcon size={40} color="white" style={{ marginRight: '12px' }} />
+          <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: 'bold' }}>
+            Dodos BOG-321
           </Typography>
           {user && (
             <Box>
