@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Container, TextField, Button, Typography, Box } from '@mui/material'
+import DodoIcon from '../components/DodoIcon'
 import { useAuthStore } from '../store/useAuthStore'
 
 export function LoginPage() {
@@ -16,8 +17,12 @@ export function LoginPage() {
   return (
     <Container maxWidth="xs">
       <Box sx={{ mt: 8, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <Typography component="h1" variant="h5">
-          Login
+        <DodoIcon size={80} color="#1976d2" style={{ marginBottom: '16px' }} />
+        <Typography component="h1" variant="h4" gutterBottom sx={{ fontWeight: 'bold' }}>
+          Dodos BOG-321
+        </Typography>
+        <Typography component="h2" variant="h6" color="textSecondary" sx={{ mb: 2 }}>
+          Login to Vote
         </Typography>
         <Box sx={{ mt: 1 }}>
           <TextField
